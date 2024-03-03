@@ -16,25 +16,26 @@ const AddProduct = asyncHandler(async (req, res) => {
     product_imageUrl,
   } = req.body;
   if (
-    [   product_name,
-        added_by,
-        product_title,
-        product_description,
-        product_brand,
-        product_imageUrl,
+    [
+      product_name,
+      added_by,
+      product_title,
+      product_description,
+      product_brand,
+      product_imageUrl,
     ].some((field) => field?.trim() === "")
   ) {
     throw new ApiError(400, "All fields are required");
   }
 
-  if(product_quantity<=0){
-    throw new ApiError(500, "Product quantity cant be less or equal to 0")
+  if (product_quantity <= 0) {
+    throw new ApiError(500, "Product quantity cant be less or equal to 0");
   }
-  if(product_discount<=0){
-    throw new ApiError(500, "Product discount cant be less or equal to 0")
+  if (product_discount <= 0) {
+    throw new ApiError(500, "Product discount cant be less or equal to 0");
   }
-  if(product_price<=0){
-    throw new ApiError(500, "Product price cant be less or equal to 0")
+  if (product_price <= 0) {
+    throw new ApiError(500, "Product price cant be less or equal to 0");
   }
 
   const isProducteists = await Product.findOne({ product_name });
@@ -62,4 +63,27 @@ const AddProduct = asyncHandler(async (req, res) => {
     .status(201)
     .json(new ApiResponse(200, newProduct, "Prodcut created Successfully"));
 });
-export { AddProduct };
+
+const UpdateProduct = asyncHandler(async (req, res) => {
+  const { _id, datatoupdate } = req.body;
+
+  const isProductexists = await Product.findOne({ _id });
+  if (!isProductexists) {
+    throw new ApiError(500, "Prodcut not Found");
+  }
+
+  const updatedProduct = await Product.findOneAndUpdate({ _id }, datatoupdate, {
+    new: true,
+  });
+
+  if (!updatedProduct) {
+    throw new ApiError(500, "Something went wrong in updation of Prodcut");
+  }
+
+  return res
+    .status(201)
+    .json(new ApiResponse(200, updatedProduct, "Prodcut updated Successfully"));
+});
+
+
+export { AddProduct,UpdateProduct };
