@@ -93,48 +93,65 @@ const UpdateProduct = asyncHandler(async (req, res) => {
 });
 
 const AddReview = asyncHandler(async (req, res) => {
-    const { user_id, product_id, reviewtext } = req.body;
-  
-    if ([user_id, product_id, reviewtext].some((field) => field?.trim() === "")) {
-      throw new ApiError(500, "All fields must be filled properly");
-    }
-  
-    const isuserexists = await User.findOne({ _id: user_id });
-    if (!isuserexists) {
-      throw new ApiError(500, "User not found");
-    }
-  
-    const isproductexists = await Product.findOne({ _id: product_id });
-    if (!isproductexists) {
-      throw new ApiError(500, "Product not found");
-    }
-  
-    const newreview = await ProductReview.create({
-      user_id,
-      product_id,
-      reviewtext,
-      user_name: isuserexists.username,
-    });
-  
-    if (!newreview) {
-      throw new ApiError(500, "Something went wrong in the creation of the review");
-    }
-  
-    const review_id = newreview._id; 
-    
-    const addReviewResult = await Product.updateOne(
-      { _id: product_id },
-      { $push: { product_reviews: {review_id} } }
-    );
+  const { user_id, product_id, reviewtext } = req.body;
 
-    if(!addReviewResult){
-        throw new ApiError(500, "Something went wrong in updating review result")
-    }
-  
-    return res
-      .status(201)
-      .json(new ApiResponse(200, addReviewResult, "Review added successfully"));
+  if ([user_id, product_id, reviewtext].some((field) => field?.trim() === "")) {
+    throw new ApiError(500, "All fields must be filled properly");
+  }
+
+  const isuserexists = await User.findOne({ _id: user_id });
+  if (!isuserexists) {
+    throw new ApiError(500, "User not found");
+  }
+
+  const isproductexists = await Product.findOne({ _id: product_id });
+  if (!isproductexists) {
+    throw new ApiError(500, "Product not found");
+  }
+
+  const newreview = await ProductReview.create({
+    user_id,
+    product_id,
+    reviewtext,
+    user_name: isuserexists.username,
   });
-  
-  
-export { AddProduct, UpdateProduct, AddReview };
+
+  if (!newreview) {
+    throw new ApiError(
+      500,
+      "Something went wrong in the creation of the review"
+    );
+  }
+
+  const review_id = newreview._id;
+
+  const addReviewResult = await Product.updateOne(
+    { _id: product_id },
+    { $push: { product_reviews: { review_id } } }
+  );
+
+  if (!addReviewResult) {
+    throw new ApiError(500, "Something went wrong in updating review result");
+  }
+
+  return res
+    .status(201)
+    .json(new ApiResponse(200, addReviewResult, "Review added successfully"));
+});
+
+const GetAllProducts=asyncHandler(async(req,res)=>{
+    const allprodcuts=await Product.find();
+    return res.status(201).json(new ApiResponse(200,allprodcuts,"Successfully got all prodcut"));
+})
+
+const GetProductbyId=asyncHandler(async(req,res)=>{
+    const {product_id}=req.body;
+
+    const product=await Product.findOne({_id:product_id});
+    if(!product){
+        throw new ApiError(500,"Product not found");
+    }
+    return res.status(201).json(new ApiResponse(200,product, "Successfully got the product"))
+})
+
+export { AddProduct, UpdateProduct, AddReview ,GetAllProducts,GetProductbyId};
