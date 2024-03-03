@@ -2,6 +2,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Product } from "../models/products.model.js";
+import { User } from "../models/user.model.js";
+import { ProductReview } from "../models/productReview.model.js";
 
 const AddProduct = asyncHandler(async (req, res) => {
   const {
@@ -41,6 +43,11 @@ const AddProduct = asyncHandler(async (req, res) => {
   const isProducteists = await Product.findOne({ product_name });
   if (isProducteists) {
     throw new ApiError(500, "Prodcut already exists");
+  }
+
+  const isuserexists = await User.findOne({ _id: added_by });
+  if (!isuserexists) {
+    throw new ApiError(500, "User not found");
   }
 
   const newProduct = await Product.create({
@@ -85,5 +92,49 @@ const UpdateProduct = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, updatedProduct, "Prodcut updated Successfully"));
 });
 
+const AddReview = asyncHandler(async (req, res) => {
+    const { user_id, product_id, reviewtext } = req.body;
+  
+    if ([user_id, product_id, reviewtext].some((field) => field?.trim() === "")) {
+      throw new ApiError(500, "All fields must be filled properly");
+    }
+  
+    const isuserexists = await User.findOne({ _id: user_id });
+    if (!isuserexists) {
+      throw new ApiError(500, "User not found");
+    }
+  
+    const isproductexists = await Product.findOne({ _id: product_id });
+    if (!isproductexists) {
+      throw new ApiError(500, "Product not found");
+    }
+  
+    const newreview = await ProductReview.create({
+      user_id,
+      product_id,
+      reviewtext,
+      user_name: isuserexists.username,
+    });
+  
+    if (!newreview) {
+      throw new ApiError(500, "Something went wrong in the creation of the review");
+    }
+  
+    const review_id = newreview._id; 
+    
+    const addReviewResult = await Product.updateOne(
+      { _id: product_id },
+      { $push: { product_reviews: {review_id} } }
+    );
 
-export { AddProduct,UpdateProduct };
+    if(!addReviewResult){
+        throw new ApiError(500, "Something went wrong in updating review result")
+    }
+  
+    return res
+      .status(201)
+      .json(new ApiResponse(200, addReviewResult, "Review added successfully"));
+  });
+  
+  
+export { AddProduct, UpdateProduct, AddReview };
