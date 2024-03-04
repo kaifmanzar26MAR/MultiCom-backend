@@ -139,19 +139,96 @@ const AddReview = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, addReviewResult, "Review added successfully"));
 });
 
-const GetAllProducts=asyncHandler(async(req,res)=>{
-    const allprodcuts=await Product.find();
-    return res.status(201).json(new ApiResponse(200,allprodcuts,"Successfully got all prodcut"));
-})
+const GetAllProducts = asyncHandler(async (req, res) => {
+  const allprodcuts = await Product.find();
+  return res
+    .status(201)
+    .json(new ApiResponse(200, allprodcuts, "Successfully got all prodcut"));
+});
 
-const GetProductbyId=asyncHandler(async(req,res)=>{
-    const {product_id}=req.body;
+const GetProductbyId = asyncHandler(async (req, res) => {
+  const { product_id } = req.body;
 
-    const product=await Product.findOne({_id:product_id});
-    if(!product){
-        throw new ApiError(500,"Product not found");
+  const product = await Product.findOne({ _id: product_id });
+  if (!product) {
+    throw new ApiError(500, "Product not found");
+  }
+  return res
+    .status(201)
+    .json(new ApiResponse(200, product, "Successfully got the product"));
+});
+
+const SearchProdcut = asyncHandler(async (req, res) => {
+  const { key } = req.body;
+  const allprodcuts = await Product.find();
+  const filteredProducts = allprodcuts.filter((product) =>
+    product.product_name.toLowerCase().includes(key.toLowerCase())
+  );
+
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        200,
+        filteredProducts,
+        "Successfully got the prodcut with key"
+      )
+    );
+});
+
+const AddProductToCart = asyncHandler(async (req, res) => {
+  const { product_id, user_id, quantity } = req.body;
+
+  if ([product_id, user_id].some((field) => field?.trim() === "")) {
+    throw new ApiError(500, "Please fill the required fields");
+  }
+
+  const isUser = await User.findOne({ _id: user_id });
+
+  if (!isUser) {
+    throw new ApiError(500, "User Not Found ");
+  }
+
+  const isProductInCart = isUser.cart.find(
+    (product) => product.product_id.toString() === product_id.toString()
+  );
+  // console.log(isProductInCart, isUser, isUser.cart)
+  if (!isProductInCart) {
+    const newProduct = isUser.cart.push({ product_id, quantity });
+
+    const saveUser = await isUser.save();
+    if (!saveUser) {
+      throw new ApiError(500, "Something went worng in adding of product");
     }
-    return res.status(201).json(new ApiResponse(200,product, "Successfully got the product"))
-})
-
-export { AddProduct, UpdateProduct, AddReview ,GetAllProducts,GetProductbyId};
+    return res
+      .status(201)
+      .json(
+        new ApiResponse(200, saveUser, "Prodcut added to cart Successfully")
+      );
+  } else {
+    const indexOfCartElement = isUser.cart.findIndex(
+      (items) => items.product_id.toString() === product_id.toString()
+    );
+    isUser.cart[indexOfCartElement] = { product_id, user_id, quantity };
+    const updatedElement = await isUser.save();
+    console.log(updatedElement);
+    return res
+      .status(201)
+      .json(
+        new ApiResponse(
+          200,
+          updatedElement,
+          "Product updated in the cart successfully"
+        )
+      );
+  }
+});
+export {
+  AddProduct,
+  UpdateProduct,
+  AddReview,
+  GetAllProducts,
+  GetProductbyId,
+  SearchProdcut,
+  AddProductToCart,
+};
