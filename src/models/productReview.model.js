@@ -19,6 +19,11 @@ const productreview=new Schema({
         type:String,
         required:true,
 
+    },
+    ratings:{
+        type:Number,
+        required:true,
+        default:5
     }
 },
 {

@@ -58,6 +58,10 @@ const productSchema = new Schema(
       type: String,
       required: true,
     },
+    product_category:{
+      type:String,
+      required:true,
+    }
   },
   {
     timestamps: true,
