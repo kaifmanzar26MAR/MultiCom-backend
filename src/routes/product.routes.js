@@ -8,6 +8,8 @@ import {
   SearchProdcut,
   AddProductToCart,
   GetProdcutReviews,
+  GetAllProductCategory,
+  GetProductImageByCategory,
 } from "../controllers/product.controller.js";
 
 const router = Router();
@@ -20,4 +22,6 @@ router.route("/getproductbyid").post(GetProductbyId);
 router.route("/getprodcutreviewbyid").post(GetProdcutReviews);
 router.route("/search").post(SearchProdcut);
 router.route("/addtocart").post(AddProductToCart);
+router.route("/getallproductcategory").get(GetAllProductCategory);
+router.route(`/getproductimagebycategory/:category`).get(GetProductImageByCategory)
 export default router;

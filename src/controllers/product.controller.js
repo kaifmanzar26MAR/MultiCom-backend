@@ -16,7 +16,7 @@ const AddProduct = asyncHandler(async (req, res) => {
     product_description,
     product_brand,
     product_imageUrl,
-    product_category
+    product_category,
   } = req.body;
   // console.log(
   //   product_name,
@@ -38,7 +38,7 @@ const AddProduct = asyncHandler(async (req, res) => {
       product_description,
       product_brand,
       product_imageUrl,
-      product_category
+      product_category,
     ].some((field) => field?.trim() === "")
   ) {
     throw new ApiError(400, "All fields are required");
@@ -74,7 +74,7 @@ const AddProduct = asyncHandler(async (req, res) => {
     product_description,
     product_brand,
     product_imageUrl,
-    product_category
+    product_category,
   });
 
   if (!newProduct) {
@@ -155,14 +155,17 @@ const AddReview = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, addReviewResult, "Review added successfully"));
 });
 
-const GetProdcutReviews = asyncHandler(async(req,res)=>{
-  const {review_id} = req.body;
-  const review= await ProductReview.findOne({_id:review_id});
-  if(!review){
+const GetProdcutReviews = asyncHandler(async (req, res) => {
+  const { review_id } = req.body;
+  const review = await ProductReview.findOne({ _id: review_id });
+  if (!review) {
     throw new ApiError(500, "No Review found as per the id");
   }
-  return res.status(201).json(new ApiResponse(200,review,"Review Found Successfully"));
-})
+  return res
+    .status(201)
+    .json(new ApiResponse(200, review, "Review Found Successfully"));
+});
+
 const GetAllProducts = asyncHandler(async (req, res) => {
   const allprodcuts = await Product.find();
   return res
@@ -172,9 +175,9 @@ const GetAllProducts = asyncHandler(async (req, res) => {
 
 const GetProductbyId = asyncHandler(async (req, res) => {
   const { product_id } = req.body;
-console.log("back", product_id.toString())
+  console.log("back", product_id.toString());
   const product = await Product.findOne({ _id: product_id });
-  console.log(product)
+  console.log(product);
   if (!product) {
     throw new ApiError(500, "Product not found");
   }
@@ -203,6 +206,7 @@ const SearchProdcut = asyncHandler(async (req, res) => {
 
 const AddProductToCart = asyncHandler(async (req, res) => {
   const { product_id, user_id, quantity } = req.body;
+  console.log(product_id, user_id, quantity);
 
   if ([product_id, user_id].some((field) => field?.trim() === "")) {
     throw new ApiError(500, "Please fill the required fields");
@@ -248,6 +252,42 @@ const AddProductToCart = asyncHandler(async (req, res) => {
       );
   }
 });
+
+const GetAllProductCategory = asyncHandler(async (req, res) => {
+  const allproducts = await Product.find();
+  if (!allproducts) {
+    throw new ApiError(500, "Error in getting Products");
+  }
+
+  const categoriesSet = new Set(
+    allproducts.map((product) => {
+      return product.product_category;
+    })     
+  );
+  const categories = [...categoriesSet];
+  // console.log(categories)
+  return res
+    .status(201)
+    .json(new ApiResponse(200, categories, "got all categories successfully"));
+});
+
+const GetProductImageByCategory = asyncHandler(async (req, res) => {
+  const category = req.params.category;
+  // console.log(category);
+  const productWithCategory = await Product.findOne({product_category:category});
+
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        200,
+        productWithCategory.product_imageUrl,
+        "Got product image successfully"
+      )
+    );
+});
+
+
 export {
   AddProduct,
   UpdateProduct,
@@ -256,5 +296,7 @@ export {
   GetProductbyId,
   SearchProdcut,
   AddProductToCart,
-  GetProdcutReviews
+  GetProdcutReviews,
+  GetAllProductCategory,
+  GetProductImageByCategory,
 };
