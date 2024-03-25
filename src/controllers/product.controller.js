@@ -175,9 +175,9 @@ const GetAllProducts = asyncHandler(async (req, res) => {
 
 const GetProductbyId = asyncHandler(async (req, res) => {
   const { product_id } = req.body;
-  console.log("back", product_id.toString());
+  // console.log("back", product_id.toString());
   const product = await Product.findOne({ _id: product_id });
-  console.log(product);
+  // console.log(product);
   if (!product) {
     throw new ApiError(500, "Product not found");
   }
@@ -309,6 +309,32 @@ const GetProductsByCategory = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, allprodcuts, "Got all product as per Category"));
 });
 
+const RemoveProductFromCart = asyncHandler(async (req, res) => {
+  const { user_id, product_id } = req.body;
+console.log(user_id, product_id)
+  const user = await User.findOne({ _id: user_id });
+
+  if (!user) throw new ApiError(500, "Couldn't find User");
+
+  const userCart = user.cart; 
+
+  const updatedCart = userCart.filter((item) => item.product_id != product_id);
+
+  console.log(updatedCart);
+
+  const updateResponse = await User.findOneAndUpdate(
+    { _id: user_id },
+    { cart: updatedCart },
+    { new: true } // Return the updated document
+  );
+
+  if (!updateResponse) throw new ApiError(500, "Error in updation of Cart");
+
+  return res
+    .status(201)
+    .json(new ApiResponse(200, updatedCart, "Cart Updated Successfully"));
+});
+
 export {
   AddProduct,
   UpdateProduct,
@@ -321,4 +347,5 @@ export {
   GetAllProductCategory,
   GetProductImageByCategory,
   GetProductsByCategory,
+  RemoveProductFromCart,
 };
