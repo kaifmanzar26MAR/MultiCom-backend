@@ -262,7 +262,7 @@ const GetAllProductCategory = asyncHandler(async (req, res) => {
   const categoriesSet = new Set(
     allproducts.map((product) => {
       return product.product_category;
-    })     
+    })
   );
   const categories = [...categoriesSet];
   // console.log(categories)
@@ -273,9 +273,16 @@ const GetAllProductCategory = asyncHandler(async (req, res) => {
 
 const GetProductImageByCategory = asyncHandler(async (req, res) => {
   const category = req.params.category;
-  // console.log(category);
-  const productWithCategory = await Product.findOne({product_category:category});
 
+  if ([category].some((field) => field.trim() === ""))
+    throw new ApiError(500, "Couldn't find category");
+  // console.log(category);
+  const productWithCategory = await Product.findOne({
+    product_category: category,
+  });
+  if (!productWithCategory) {
+    throw new ApiError(500, "Couldn't find Products with category ", category);
+  }
   return res
     .status(201)
     .json(
@@ -287,6 +294,20 @@ const GetProductImageByCategory = asyncHandler(async (req, res) => {
     );
 });
 
+const GetProductsByCategory = asyncHandler(async (req, res) => {
+  const category = req.params.category;
+  if ([category].some((field) => field.trim() === ""))
+    throw new ApiError(500, "Couldn't find category");
+
+  const allprodcuts = await Product.find({ product_category: category });
+  if (!allprodcuts) {
+    throw new ApiError(500, "Not Found Products!!");
+  }
+
+  return res
+    .status(201)
+    .json(new ApiResponse(200, allprodcuts, "Got all product as per Category"));
+});
 
 export {
   AddProduct,
@@ -299,4 +320,5 @@ export {
   GetProdcutReviews,
   GetAllProductCategory,
   GetProductImageByCategory,
+  GetProductsByCategory,
 };

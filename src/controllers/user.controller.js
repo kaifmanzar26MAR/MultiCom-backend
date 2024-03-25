@@ -43,7 +43,7 @@ const registerUser = asyncHandler(async (req, res) => {
     fullName,
     email,
     password,
-    auth:"user",
+    auth: "user",
     username: username.toLowerCase(),
   });
   if (!user) {
@@ -184,8 +184,29 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Password Changed Successfully"));
 });
 
-const getCurrentUser = asyncHandler(async(req, res) => {
-  return res.status(200).json(new ApiResponse(200, req.user, "current user fetched successfully"))
-})
+const getCurrentUser = asyncHandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(new ApiResponse(200, req.user, "current user fetched successfully"));
+});
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser };
+const GetUserById = asyncHandler(async (req, res) => {
+  const id = req.params.id;
+  const user = await User.findOne({ _id: id });
+  if (!user) {
+    throw new ApiError(500, "User not found!!!");
+  }
+  return res
+    .status(201)
+    .json(new ApiResponse(200, user, "Got user Successfully"));
+});
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  changeCurrentPassword,
+  getCurrentUser,
+  GetUserById,
+};
