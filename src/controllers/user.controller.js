@@ -57,11 +57,14 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password, username } = req.body;
+  console.log(email, password)
   if (!username && !email) {
     throw new ApiError(400, "username or email is required");
   }
 
   const user = await User.findOne({ $or: [{ username }, { email }] });
+
+  // console.log(user)
 
   if (!user) {
     throw new ApiError(404, "User does not exist");
@@ -82,6 +85,8 @@ const loginUser = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: true,
   };
+
+  // console.log("hii")
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
