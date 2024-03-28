@@ -13,17 +13,18 @@ import {
   GetProductsByCategory,
   RemoveProductFromCart,
 } from "../controllers/product.controller.js";
+import { verifyJWT } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
 router.route("/addproduct").post(AddProduct);
 router.route("/updateproduct").post(UpdateProduct);
-router.route("/addreview").post(AddReview);
+router.route("/addreview").post(verifyJWT,AddReview);
 router.route("/getallproducts").get(GetAllProducts);
 router.route("/getproductbyid").post(GetProductbyId);
 router.route("/getprodcutreviewbyid").post(GetProdcutReviews);
 router.route("/search").post(SearchProdcut);
-router.route("/addtocart").post(AddProductToCart);
+router.route("/addtocart").post(verifyJWT,AddProductToCart);
 router.route("/getallproductcategory").get(GetAllProductCategory);
 router
   .route(`/getproductimagebycategory/:category`)

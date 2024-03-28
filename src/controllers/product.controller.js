@@ -108,13 +108,14 @@ const UpdateProduct = asyncHandler(async (req, res) => {
 });
 
 const AddReview = asyncHandler(async (req, res) => {
-  const { user_id, product_id, reviewtext, ratings } = req.body;
+  const { product_id, reviewtext, ratings } = req.body;
+  
 
-  if ([user_id, product_id, reviewtext].some((field) => field?.trim() === "")) {
+  if ([ product_id, reviewtext].some((field) => field?.trim() === "")){
     throw new ApiError(500, "All fields must be filled properly");
   }
 
-  const isuserexists = await User.findOne({ _id: user_id });
+  const isuserexists = await User.findOne({ _id: req.user_id });
   if (!isuserexists) {
     throw new ApiError(500, "User not found");
   }
@@ -125,7 +126,7 @@ const AddReview = asyncHandler(async (req, res) => {
   }
 
   const newreview = await ProductReview.create({
-    user_id,
+    user_id:req.user_id,
     product_id,
     reviewtext,
     ratings,
@@ -205,14 +206,13 @@ const SearchProdcut = asyncHandler(async (req, res) => {
 });
 
 const AddProductToCart = asyncHandler(async (req, res) => {
-  const { product_id, user_id, quantity } = req.body;
-  console.log(product_id, user_id, quantity);
+  const { product_id, quantity } = req.body;
 
-  if ([product_id, user_id].some((field) => field?.trim() === "")) {
+  if ([product_id].some((field) => field?.trim() === "")) {
     throw new ApiError(500, "Please fill the required fields");
   }
-
-  const isUser = await User.findOne({ _id: user_id });
+  // console.log(req.user_id.toString());
+  const isUser = await User.findOne({ _id: req.user_id });
 
   if (!isUser) {
     throw new ApiError(500, "User Not Found ");
