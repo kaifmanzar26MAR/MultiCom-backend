@@ -109,9 +109,8 @@ const UpdateProduct = asyncHandler(async (req, res) => {
 
 const AddReview = asyncHandler(async (req, res) => {
   const { product_id, reviewtext, ratings } = req.body;
-  
 
-  if ([ product_id, reviewtext].some((field) => field?.trim() === "")){
+  if ([product_id, reviewtext].some((field) => field?.trim() === "")) {
     throw new ApiError(500, "All fields must be filled properly");
   }
 
@@ -126,7 +125,7 @@ const AddReview = asyncHandler(async (req, res) => {
   }
 
   const newreview = await ProductReview.create({
-    user_id:req.user_id,
+    user_id: req.user_id,
     product_id,
     reviewtext,
     ratings,
@@ -223,7 +222,7 @@ const AddProductToCart = asyncHandler(async (req, res) => {
   );
   // console.log(isProductInCart, isUser, isUser.cart)
   if (!isProductInCart) {
-    const newProduct = isUser.cart.push({ product_id, quantity });
+    isUser.cart.push({ product_id, quantity });
 
     const saveUser = await isUser.save();
     if (!saveUser) {
@@ -238,7 +237,11 @@ const AddProductToCart = asyncHandler(async (req, res) => {
     const indexOfCartElement = isUser.cart.findIndex(
       (items) => items.product_id.toString() === product_id.toString()
     );
-    isUser.cart[indexOfCartElement] = { product_id, user_id, quantity };
+    isUser.cart[indexOfCartElement] = {
+      product_id,
+      user_id: req.user_id,
+      quantity,
+    };
     const updatedElement = await isUser.save();
     console.log(updatedElement);
     return res
@@ -311,12 +314,12 @@ const GetProductsByCategory = asyncHandler(async (req, res) => {
 
 const RemoveProductFromCart = asyncHandler(async (req, res) => {
   const { user_id, product_id } = req.body;
-// console.log(user_id, product_id)
+  // console.log(user_id, product_id)
   const user = await User.findOne({ _id: user_id });
 
   if (!user) throw new ApiError(500, "Couldn't find User");
 
-  const userCart = user.cart; 
+  const userCart = user.cart;
 
   const updatedCart = userCart.filter((item) => item.product_id != product_id);
 
