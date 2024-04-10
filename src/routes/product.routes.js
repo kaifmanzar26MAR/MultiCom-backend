@@ -16,9 +16,11 @@ import {
 import { verifyJWT } from "../middleware/auth.middleware.js";
 
 const router = Router();
-
+//admin
 router.route("/addproduct").post(AddProduct);
 router.route("/updateproduct").post(UpdateProduct);
+
+//user
 router.route("/addreview").post(verifyJWT,AddReview);
 router.route("/getallproducts").get(GetAllProducts);
 router.route("/getproductbyid").post(GetProductbyId);
@@ -30,5 +32,5 @@ router
   .route(`/getproductimagebycategory/:category`)
   .get(GetProductImageByCategory);
 router.route(`/getproductswithcategory/:category`).get(GetProductsByCategory);
-router.route("/removeproductfromcart").post(RemoveProductFromCart);
+router.route("/removeproductfromcart").post(verifyJWT,RemoveProductFromCart);
 export default router;

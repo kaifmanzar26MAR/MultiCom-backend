@@ -313,9 +313,9 @@ const GetProductsByCategory = asyncHandler(async (req, res) => {
 });
 
 const RemoveProductFromCart = asyncHandler(async (req, res) => {
-  const { user_id, product_id } = req.body;
+  const { product_id } = req.body;
   // console.log(user_id, product_id)
-  const user = await User.findOne({ _id: user_id });
+  const user = await User.findOne({ _id: req.user_id });
 
   if (!user) throw new ApiError(500, "Couldn't find User");
 
@@ -326,7 +326,7 @@ const RemoveProductFromCart = asyncHandler(async (req, res) => {
   // console.log(updatedCart);
 
   const updateResponse = await User.findOneAndUpdate(
-    { _id: user_id },
+    { _id: req.user_id },
     { cart: updatedCart },
     { new: true } // Return the updated document
   );
